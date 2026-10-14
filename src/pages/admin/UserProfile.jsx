@@ -2,15 +2,16 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../api/axios";
+import { useNavigate } from "react-router-dom";   // ✅ import useNavigate
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, Button
+  Paper, Typography, CircularProgress, Dialog, DialogTitle, DialogContent, Button, DialogActions
 } from "@mui/material";
-
-import { Link } from "react-router-dom";
+import { useSnackbar } from "notistack";
 
 async function fetchUserProfile() {
-  const { data } = await api.get("/api/v1/users/all"); 
+  const userRole = localStorage.getItem("role"); 
+  const { data } = await api.get("/api/v1/users/all/"+userRole); 
   console.log("User Profile API response:", data);
   return data;
 }
@@ -24,6 +25,9 @@ export default function UserProfile() {
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
+  const navigate = useNavigate();              // ✅ define navigate here
+  const { enqueueSnackbar } = useSnackbar();   // ✅ define snackbar here
+
   const handleOpen = (user) => {
     setSelectedUser(user);
     setOpen(true);
@@ -32,6 +36,19 @@ export default function UserProfile() {
   const handleClose = () => {
     setOpen(false);
     setSelectedUser(null);
+  };
+
+  const handleAddUser = () => {
+    const userRole = localStorage.getItem("role"); // or from auth context
+    if (userRole === "ROLE_ADMIN") {
+      navigate("/admindashboard/userProfile/add");
+    } else if (userRole === "ROLE_OWNER") {
+      navigate("/ownerdashboard/owner-userProfile/add");
+    } else if (userRole === "ROLE_ADMIN_SUPER") {
+      navigate("/superadmin-dashboard/superadmin-userProfile/add");
+    }else {
+      enqueueSnackbar("Unauthorized role", { variant: "error" });
+    }
   };
 
   if (isLoading) return <CircularProgress sx={{ m: 3 }} />;
@@ -63,7 +80,6 @@ export default function UserProfile() {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.organizationId}</TableCell>
                 <TableCell>
-                  
                   <Button
                     variant="outlined"
                     color="secondary"
@@ -74,21 +90,26 @@ export default function UserProfile() {
                   >
                     Edit
                   </Button>
-                
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => handleOpen(user)}
+                  >
+                    View
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
         <Button
-                      sx={{ m: 2 }}
-                      variant="contained"
-                      color="success"
-                      component={Link}
-                      to="/admindashboard/userProfile/add"
-                    >
-                      Add New User
-                    </Button>
+          sx={{ m: 2 }}
+          variant="contained"
+          color="success"
+          onClick={handleAddUser}
+        >
+          Add New User
+        </Button>
       </TableContainer>
 
       {/* Popup Dialog */}
@@ -105,6 +126,9 @@ export default function UserProfile() {
             </>
           )}
         </DialogContent>
+        <DialogActions>
+                  <Button onClick={handleClose} color="primary">Close</Button>
+                </DialogActions>
       </Dialog>
     </>
   );

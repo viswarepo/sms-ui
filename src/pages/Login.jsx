@@ -28,18 +28,40 @@ export default function Login() {
       localStorage.setItem("username", res.data.username);
       localStorage.setItem("role", res.data.role);
       localStorage.setItem("email", res.data.email);
+      localStorage.setItem("customerId", res.data.customerId);
+      localStorage.setItem("organizationName", res.data.organizationName);
 
-      console.log("token==>", localStorage.getItem("token"));
-      console.log("role==>", localStorage.getItem("role"));
+      console.log("customer id==>",localStorage.getItem("customerId"))
 
-      if (res.data.role === "ROLE_ADMIN") {
+      console.log("organizationId==>",localStorage.getItem("organizationId"))
+      console.log("organizationName==>",localStorage.getItem("organizationName"))
+
+      const custid = localStorage.getItem("customerId");
+      const role = localStorage.getItem("role");
+
+     
+      console.log("role==>", role);
+      console.log("custid==>", custid);
+
+      if (role === "ROLE_OWNER") {
+        // Owner doesn’t need customerId
+        console.log("email==>", localStorage.getItem("email"));
+        console.log("after tenant login org id ==>", localStorage.getItem("organizationId"));
+        navigate("/ownerdashboard");
+
+      } else if (role === "ROLE_ADMIN_SUPER" && custid) {
+        // SuperAdmin must have a customerId
+        navigate("/superadmin-dashboard");
+
+      } else if (role === "ROLE_ADMIN") {
+        // Tenant Admin must also have a customerId
         navigate("/admindashboard");
-      } else if (res.data.role === "ROLE_CUSTOMER") {
-         localStorage.setItem("customerId", res.data.customerId);
-         console.log("customerId==>", localStorage.getItem("customerId"));
-         console.log("email==>", localStorage.getItem("email"));
-         
+
+      } else if (role === "ROLE_CUSTOMER" && custid) {
+        console.log("customerId==>", custid);
+        console.log("email==>", localStorage.getItem("email"));
         navigate("/customerdashboard");
+
       } else {
         navigate("/unauthorized");
       }
@@ -85,7 +107,7 @@ export default function Login() {
               <Link to="/forgot-password">Forgot Password?</Link>
             </Typography>
             <Typography variant="body2">
-              <Link to="/signup">Sign Up</Link>
+              <Link to="/tenant-signup">Sign Up</Link>
             </Typography>
           </Box>
         </Box>

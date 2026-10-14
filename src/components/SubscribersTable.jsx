@@ -1,5 +1,6 @@
 // src/components/SubscribersTable.jsx
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -10,6 +11,7 @@ import {
   Paper,
   CircularProgress,
   Typography,
+  Button
 } from "@mui/material";
 import api from "../api/axios";
 
@@ -43,9 +45,10 @@ export default function SubscribersTable() {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>ID</TableCell>
+            <TableCell>Subscription Id</TableCell>
             <TableCell>Customer</TableCell>
-            <TableCell>Plan Code</TableCell>
+            <TableCell>Plan</TableCell>
+            <TableCell>Cycle</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -54,8 +57,22 @@ export default function SubscribersTable() {
               <TableCell>{sub.id}</TableCell>
               <TableCell>{sub.customerName || sub.customer?.name}</TableCell>
               <TableCell>{sub.planCode}</TableCell>
+              <TableCell>{sub.billingCycle}</TableCell>
             </TableRow>
           ))}
+
+          {/* Add More Info row at bottom */}
+    <TableRow>
+      <TableCell colSpan={3} align="center">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/admindashboard/subscriptions")}
+        >
+          More Info
+        </Button>
+      </TableCell>
+    </TableRow>
         </TableBody>
       </Table>
     </TableContainer>

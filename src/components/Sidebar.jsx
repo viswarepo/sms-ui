@@ -22,19 +22,18 @@ import { NavLink } from "react-router-dom";
 
 const menuItems = [
   { text: "AdminDashboard", icon: <DashboardIcon />, path: "/admindashboard" },
-  { text: "Products", icon: <InventoryIcon />, path: "/admindashboard/products" },
+  //{ text: "Manage Users", icon: <SettingsIcon />, path: "/admindashboard/userProfile" },
+  { text: "Manage Customers", icon: <PeopleIcon />, path: "/admindashboard/customers" },
+  { text: "Manage Products", icon: <InventoryIcon />, path: "/admindashboard/products" },
   { text: "Manage Plans", icon: <PaymentIcon />, path: "/admindashboard/plans" },
-  { text: "Features", icon: <PaymentIcon />, path: "/admindashboard/features" },
-  { text: "Subscriptions", icon: <PeopleIcon />, path: "/admindashboard/subscriptions" },
-  { text: "Customers", icon: <PeopleIcon />, path: "/admindashboard/customers" },
-  
-  { text: "User Profile", icon: <SettingsIcon />, path: "/admindashboard/userProfile" },
-  { text: "Settings", icon: <SettingsIcon />, path: "/admindashboard/settings" },
-  { text: "Alert Templates", icon: <SettingsIcon />, path: "/admindashboard/alert-templates" },
+  { text: "Manage Features", icon: <PaymentIcon />, path: "/admindashboard/features" },
+  { text: "Manage Subscriptions", icon: <PeopleIcon />, path: "/admindashboard/subscriptions" },
+  { text: "Settings", icon: <SettingsIcon />, path: "/admindashboard/tenant-admin-settings" },
+  //{ text: "Alert Templates", icon: <SettingsIcon />, path: "/admindashboard/alert-templates" },
 ];
 
 const paymenMenuItems = [
-  { text: "PaymentHistory", icon: <SettingsIcon />, path: "/admindashboard/payment/paymenthistory" },
+  { text: "Payment History", icon: <SettingsIcon />, path: "/admindashboard/payment/paymenthistory" },
   { text: "Refund", icon: <SettingsIcon />, path: "/admindashboard/payment/refund" },
   { text: "Analytics", icon: <BarChartIcon />, path: "/admindashboard/payment/analytics" },
 ];

@@ -54,7 +54,7 @@ const subscriptionMutation = useMutation({
 
     // ✅ Redirect after 2 seconds to BillingDashboard.jsx
     setTimeout(() => {
-      navigate("/customerdashboard/billingdashboard"); 
+      navigate("/superadmin-dashboard/superadmin-billingdashboard"); 
     }, 2000);
   },
   onError: () => {

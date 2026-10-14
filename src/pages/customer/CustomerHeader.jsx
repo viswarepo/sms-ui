@@ -10,6 +10,7 @@ export default function CustomerHeader() {
 
   const username = localStorage.getItem("username");
   const profileImage = localStorage.getItem("profileImage"); 
+  const orgName = localStorage.getItem("organizationName"); 
   // You can set this after login or fetch from /api/v1/customers/me
 
   async function handleLogout() {
@@ -29,7 +30,7 @@ export default function CustomerHeader() {
       <Toolbar>
         {/* Left side: App title */}
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Customer Dashboard
+          Tenant | Customer | Dashboard | {orgName}
         </Typography>
 
         {/* Right side: profile + logout */}

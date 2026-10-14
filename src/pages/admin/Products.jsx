@@ -1,29 +1,30 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axios";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Typography, CircularProgress, Button
 } from "@mui/material";
 import { useSnackbar } from "notistack";
+import EditProductDialog from "./EditProductDialog.jsx"; // ✅ default import
 
-import EditProductDialog from "./EditProductDialog.jsx";// ✅ default import
-
-
-
+// Fetch products
 async function fetchProducts() {
-  const { data } = await api.get("/api/v1/products/all");
-  return data;
+  console.log("Tenant login org id ==>", localStorage.getItem("organizationId"));
+  const role = localStorage.getItem("role");
+  const { data } = await api.get("/api/v1/products/all/"+role);
+  return Array.isArray(data) ? data : data?.products || [];
 }
 
+// Update product
 async function updateProduct(product) {
-  console.log("id",product.id)
+  console.log("Updating product id:", product.id);
   const { data } = await api.patch(`/api/v1/products/update/${product.id}`, product);
-  
   return data;
 }
 
+// Delete product
 async function deleteProduct(id) {
   await api.delete(`/api/v1/products/${id}`);
 }
@@ -34,10 +35,12 @@ export default function Products() {
     queryFn: fetchProducts,
   });
 
-  const [selectedProduct, setSelectedProduct] = useState(null); // ✅ separate state
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
+  // Mutations
   const mutationUpdate = useMutation({
     mutationFn: updateProduct,
     onSuccess: () => {
@@ -56,10 +59,22 @@ export default function Products() {
     onError: () => enqueueSnackbar("Failed to delete product", { variant: "error" }),
   });
 
+  // Role-based navigation
+  const handleAddProduct = () => {
+    const userRole = localStorage.getItem("role"); // or from context/auth
+    if (userRole === "ROLE_ADMIN") {
+      navigate("/admindashboard/products/add");
+    } else if (userRole === "ROLE_OWNER") {
+      navigate("/ownerdashboard/owner-products/add");
+    } else {
+      enqueueSnackbar("Unauthorized role", { variant: "error" });
+    }
+  };
+
   if (isLoading) return <CircularProgress sx={{ m: 3 }} />;
   if (error) return <Typography color="error">Error loading products</Typography>;
 
-  const products = Array.isArray(data) ? data : data?.products || [];
+  const products = Array.isArray(data) ? data : [];
 
   return (
     <TableContainer component={Paper} sx={{ mt: 3 }}>
@@ -88,17 +103,11 @@ export default function Products() {
                   variant="outlined"
                   color="primary"
                   sx={{ mr: 1 }}
-                  onClick={() => setSelectedProduct(product)} // ✅ works now
+                  onClick={() => setSelectedProduct(product)}
                 >
                   Edit
                 </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => mutationDelete.mutate(product.id)}
-                >
-                  View
-                </Button>
+             
               </TableCell>
             </TableRow>
           ))}
@@ -117,8 +126,7 @@ export default function Products() {
         sx={{ m: 2 }}
         variant="contained"
         color="success"
-        component={Link}
-        to="/admindashboard/products/add"
+        onClick={handleAddProduct}
       >
         Add New Product
       </Button>

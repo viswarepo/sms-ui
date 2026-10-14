@@ -15,12 +15,13 @@ import {
   TextField,
   TablePagination,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link , useNavigate} from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { useState } from "react";
 
 async function fetchCustomers() {
-  const { data } = await api.get("/api/v1/customers/all");
+  const userRole = localStorage.getItem("role"); 
+  const { data } = await api.get("/api/v1/customers/all/"+userRole);
   return data;
 }
 
@@ -49,6 +50,8 @@ export default function ListCustomers() {
   const [nameFilter, setNameFilter] = useState("");
   const [emailFilter, setEmailFilter] = useState("");
 
+  const navigate = useNavigate();
+
   // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -72,6 +75,17 @@ export default function ListCustomers() {
     page * rowsPerPage + rowsPerPage
   );
 
+   const handleAddCustomer = () => {
+    const userRole = localStorage.getItem("role"); // or from auth context
+    if (userRole === "ROLE_ADMIN") {
+      navigate("/admindashboard/customers/add");
+    } else if (userRole === "ROLE_OWNER") {
+      navigate("/ownerdashboard/owner-customers/add");
+    } else {
+      enqueueSnackbar("Unauthorized role", { variant: "error" });
+    }
+  };
+
   return (
     <TableContainer component={Paper} sx={{ mt: 3 }}>
       <Typography variant="h5" sx={{ p: 2 }}>
@@ -85,8 +99,7 @@ export default function ListCustomers() {
     <Button
       variant="contained"
       color="primary"
-      component={Link}
-      to="/admindashboard/customers/add"
+      onClick={handleAddCustomer}
     >
       Add Customer
     </Button>

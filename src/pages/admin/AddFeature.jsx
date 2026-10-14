@@ -34,7 +34,15 @@ export default function CreateFeature() {
         console.log("role--->",localStorage.getItem("role"));
       await api.post("/api/v1/features/add", form);
       enqueueSnackbar("Feature created successfully!", { variant: "success" });
-      navigate("/admindashboard/features");
+  
+      const userRole = localStorage.getItem("role"); // or from context/auth
+      if (userRole === "ROLE_ADMIN") {
+        navigate("/admindashboard/features");
+      } else if (userRole === "ROLE_OWNER") {
+        navigate("/ownerdashboard/owner-features");
+      } else {
+        enqueueSnackbar("Unauthorized role", { variant: "error" });
+      }
     } catch (err) {
       console.error("Feature creation failed:", err);
       enqueueSnackbar("Failed to create feature", { variant: "error" });
