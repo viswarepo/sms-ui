@@ -1,20 +1,18 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState} from "react";
 import api from "../../api/axios";
+import { Link, useNavigate } from "react-router-dom";   // ✅ import useNavigate
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Typography, CircularProgress, Button
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import { Link } from "react-router-dom";
-
-import EditFeatureDialog from "./EditFeatureDialog.jsx";// ✅ default import
+import EditFeatureDialog from "./EditFeatureDialog.jsx";
 
 // Fetch features
 async function fetchFeatures() {
   const { data } = await api.get("/api/v1/features/list");
-  return data;
- // return Array.isArray(data) ? data : data?.features || [];
+  return Array.isArray(data) ? data : data?.features || [];
 }
 
 // Delete feature
@@ -22,17 +20,16 @@ async function deleteFeature(id) {
   await api.delete(`/api/v1/features/${id}`);
 }
 
-export default function Features() {   // ✅ default export here
+export default function Features() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["features"],
     queryFn: fetchFeatures,
   });
-  
 
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
-
-  const [selectedFeature, setSelectedFeature] = useState(null); // ✅ separate state
+  const [selectedFeature, setSelectedFeature] = useState(null);
+  const navigate = useNavigate();   // ✅ define navigate here
 
   const mutationDelete = useMutation({
     mutationFn: deleteFeature,
@@ -42,6 +39,17 @@ export default function Features() {   // ✅ default export here
     },
     onError: () => enqueueSnackbar("Failed to delete feature", { variant: "error" }),
   });
+
+  const handleAddFeature = () => {
+    const userRole = localStorage.getItem("role"); // or from auth context
+    if (userRole === "ROLE_ADMIN") {
+      navigate("/admindashboard/features/add");
+    } else if (userRole === "ROLE_OWNER") {
+      navigate("/ownerdashboard/owner-features/add");
+    } else {
+      enqueueSnackbar("Unauthorized role", { variant: "error" });
+    }
+  };
 
   if (isLoading) return <CircularProgress sx={{ m: 3 }} />;
   if (error) return <Typography color="error">Error loading features</Typography>;
@@ -68,22 +76,24 @@ export default function Features() {   // ✅ default export here
               <TableCell>{feature.name}</TableCell>
               <TableCell>{feature.description}</TableCell>
               <TableCell>{feature.type}</TableCell>
-              
               <TableCell>
                 <Button
                   variant="outlined"
                   color="primary"
                   sx={{ mr: 1 }}
-                  onClick={() => setSelectedFeature(feature)} // ✅ works now
+                  onClick={() => setSelectedFeature(feature)}
                 >
-                  Edit
+                  View Entitlements
                 </Button>
+              </TableCell>
+              <TableCell>
                 <Button
                   variant="outlined"
-                  color="error"
-                  onClick={() => mutationDelete.mutate(feature.id)}
+                  color="primary"
+                  sx={{ mr: 1 }}
+                  onClick={() => setSelectedFeature(feature)}
                 >
-                  View
+                  Edit
                 </Button>
               </TableCell>
             </TableRow>
@@ -91,23 +101,22 @@ export default function Features() {   // ✅ default export here
         </TableBody>
       </Table>
 
-          {/* Edit Dialog */}
-                <EditFeatureDialog
-                  open={!!selectedFeature}
-                  onClose={() => setSelectedFeature(null)}
-                  feature={selectedFeature}
-                  onSave={(updated) => mutationUpdate.mutate(updated)}
-                />
+      {/* Edit Dialog */}
+      <EditFeatureDialog
+        open={!!selectedFeature}
+        onClose={() => setSelectedFeature(null)}
+        feature={selectedFeature}
+        onSave={(updated) => mutationUpdate.mutate(updated)}
+      />
 
-       <Button
-              sx={{ m: 2 }}
-              variant="contained"
-              color="success"
-              component={Link}
-              to="/admindashboard/features/add"
-            >
-              Add New Feature
-            </Button>
+      <Button
+        sx={{ m: 2 }}
+        variant="contained"
+        color="success"
+        onClick={handleAddFeature}
+      >
+        Add New Feature
+      </Button>
     </TableContainer>
   );
 }

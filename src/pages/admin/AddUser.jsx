@@ -35,9 +35,20 @@ export default function AddUser() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post("http://localhost:8082/api/v1/users/register", formData);
+      const userRole = localStorage.getItem("role"); // or from context/auth
+      await api.post("http://localhost:8082/api/v1/users/register/"+userRole, formData);
       alert("User created successfully!");
       navigate("/admindashboard/userProfile"); // redirect back to list
+
+      // Role-based navigation
+      
+      if (userRole === "ROLE_ADMIN") {
+        navigate("/admindashboard/userProfile");
+      } else if (userRole === "ROLE_OWNER") {
+        navigate("/ownerdashboard/owner-userProfile");
+      } else {
+        enqueueSnackbar("Unauthorized role", { variant: "error" });
+      }
     } catch (error) {
       console.error("Error creating user:", error);
       alert("Failed to create user");

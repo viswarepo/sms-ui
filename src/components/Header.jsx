@@ -7,7 +7,9 @@ import { useNavigate } from "react-router-dom";
 
 export default function CustomerHeader() {
   const navigate = useNavigate();
-
+  const orgName = localStorage.getItem("organizationName")
+   const username = localStorage.getItem("username");
+  const profileImage = localStorage.getItem("profileImage"); 
   async function handleLogout() {
     try {
       // Call backend logout API (optional if you invalidate token server-side)
@@ -34,14 +36,19 @@ export default function CustomerHeader() {
       <Toolbar>
         {/* Left side: App title */}
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          Dashboard
+          Tenant | Admin | Dashboard | {orgName}
         </Typography>
 
         {/* Right side: user info + actions */}
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <IconButton color="inherit">
+          
+          {/* Profile image + name */}
+          {profileImage ? (
+            <Avatar src={profileImage} alt={username} />
+          ) : (
             <AccountCircle />
-          </IconButton>
+          )}
+          <Typography variant="body1">{username}</Typography>
           <IconButton color="inherit" onClick={handleLogout}>
             <LogoutIcon />
           </IconButton>

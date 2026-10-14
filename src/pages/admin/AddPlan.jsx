@@ -37,9 +37,10 @@ export default function CreatePlan() {
   // Fetch products and features
   useEffect(() => {
     async function fetchData() {
+      const userRole = localStorage.getItem("role"); 
       try {
         const [prodRes, featRes] = await Promise.all([
-          api.get("/api/v1/products/all"),
+          api.get("/api/v1/products/all/"+userRole),
           api.get("/api/v1/features/list"),
         ]);
         setProducts(Array.isArray(prodRes.data) ? prodRes.data : prodRes.data?.products || []);
@@ -84,9 +85,19 @@ export default function CreatePlan() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/api/v1/plans/create/draft", form);
+      const userRole = localStorage.getItem("role"); 
+      await api.post("/api/v1/plans/create/draft/"+userRole, form);
       enqueueSnackbar("Plan created successfully!", { variant: "success" });
-      navigate("/admindashboard/plans");
+   
+     // or from context/auth
+      if (userRole === "ROLE_ADMIN") {
+        navigate("/admindashboard/plans");
+      } else if (userRole === "ROLE_OWNER") {
+        navigate("/ownerdashboard/owner-plans");
+      } else {
+        enqueueSnackbar("Unauthorized role", { variant: "error" });
+      }
+
     } catch (err) {
       console.error("Plan creation failed:", err);
       enqueueSnackbar("Failed to create plan", { variant: "error" });

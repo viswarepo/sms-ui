@@ -16,13 +16,20 @@ export default function CreateCustomer() {
   async function handleSubmit(e) {
   e.preventDefault();
   try {
+    const userRole = localStorage.getItem("role"); 
     const payload = { username, email, mobile, password, name };
-    await api.post("/api/v1/customers/create", payload, {
+    await api.post("/api/v1/customers/create/"+userRole, payload, {
       headers: { "X-Organization-Id": organizationId },
     });
 
     enqueueSnackbar("Customer + User created successfully!", { variant: "success" });
-    navigate("/admindashboard/customers");
+    if(userRole==='ROLE_OWNER'){
+      navigate("/ownerdashboard/owner-customers");
+    }else if(userRole==='ROLE_ADMIN'){
+      navigate("/admindashboard/customers");
+    }else {
+      enqueueSnackbar("Unauthorized role", { variant: "error" });
+    }
 
   } catch (err) {
     let errorMessage = "Failed to create customer";

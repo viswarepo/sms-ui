@@ -28,6 +28,7 @@ const menuItems = [
   
  // { text: "Billing & Payments", icon: <PaymentIcon />, path: "/customerdashboard/create-subscription" },
    { text: "My Profile", icon: <SettingsIcon />, path: "/customerdashboard/customerprofile" },
+   { text: "My Settings", icon: <SettingsIcon />, path: "/customerdashboard/tenant-customer-settings" },
    { text: "FAQ", icon: <SettingsIcon />, path: "/login" },
    { text: "Support", icon: <SettingsIcon />, path: "/login" },
    { text: "Need Help? Chat Now ", icon: <SettingsIcon />, path: "/login" }

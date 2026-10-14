@@ -1,50 +1,42 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axios.js";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
-  CircularProgress,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Box,
-  TextField,
-  TablePagination,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Paper, Typography, CircularProgress, Button, FormControl, InputLabel,
+  Select, MenuItem, Box, TextField, TablePagination
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 import EditPlanDialog from "./EditPlanDialog.jsx";
 
 // --- API functions ---
 async function fetchPlans() {
-  const { data } = await api.get("/api/v1/plans/all");
+  const userRole = localStorage.getItem("role"); // or from context/auth
+  const { data } = await api.get("/api/v1/plans/all/"+userRole);
   if (Array.isArray(data)) return data;
   if (data?.plans && Array.isArray(data.plans)) return data.plans;
   return [];
 }
+
 async function fetchProducts() {
-  const { data } = await api.get("/api/v1/products/all");
+  const userRole = localStorage.getItem("role"); // or from context/auth
+  const { data } = await api.get("/api/v1/products/all/"+userRole);
   if (Array.isArray(data)) return data;
   if (data?.products && Array.isArray(data.products)) return data.products;
   return [];
 }
+
 async function updatePlan(plan) {
   const { data } = await api.post(`/api/v1/plans/update/${plan.id}`, plan);
   return data;
 }
+
 async function deletePlan(id) {
   const { data } = await api.delete(`/api/v1/plans/${id}`);
   return data;
 }
+
 async function publishPlan(planCode, version) {
   const token = localStorage.getItem("token");
   const { data } = await api.post(
@@ -70,13 +62,12 @@ export default function Plans() {
   const [filterProduct, setFilterProduct] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const queryClient = useQueryClient();
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();   // ✅ define navigate here
 
   // Mutations
   const mutationUpdate = useMutation({
@@ -105,6 +96,18 @@ export default function Plans() {
     },
     onError: () => enqueueSnackbar("Failed to publish plan", { variant: "error" }),
   });
+
+  // Role-based navigation
+  const handleCreateDraftPlan = () => {
+    const userRole = localStorage.getItem("role"); // or from context/auth
+    if (userRole === "ROLE_ADMIN") {
+      navigate("/admindashboard/plans/add");
+    } else if (userRole === "ROLE_OWNER") {
+      navigate("/ownerdashboard/owner-plans/add");
+    } else {
+      enqueueSnackbar("Unauthorized role", { variant: "error" });
+    }
+  };
 
   if (isLoading) return <CircularProgress sx={{ m: 3 }} />;
   if (error) return <Typography color="error">Error loading plans</Typography>;
@@ -136,13 +139,10 @@ export default function Plans() {
     <TableContainer component={Paper} sx={{ mt: 3 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", p: 2, gap: 2 }}>
         <Typography variant="h5">Plans</Typography>
-        {/* Product filter */}
+        {/* Filters and search bar */}
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Filter by Product</InputLabel>
-          <Select
-            value={filterProduct}
-            onChange={(e) => setFilterProduct(e.target.value)}
-          >
+          <Select value={filterProduct} onChange={(e) => setFilterProduct(e.target.value)}>
             <MenuItem value="">All Products</MenuItem>
             {products.map((p) => (
               <MenuItem key={p.id} value={p.productCode}>
@@ -151,13 +151,9 @@ export default function Plans() {
             ))}
           </Select>
         </FormControl>
-        {/* Status filter */}
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Filter by Status</InputLabel>
-          <Select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
+          <Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             <MenuItem value="">All Statuses</MenuItem>
             <MenuItem value="DRAFT">Draft</MenuItem>
             <MenuItem value="ACTIVE">Active</MenuItem>
@@ -165,7 +161,6 @@ export default function Plans() {
             <MenuItem value="RETIRED">Retired</MenuItem>
           </Select>
         </FormControl>
-        {/* Search bar */}
         <TextField
           variant="outlined"
           placeholder="🔍 Search plans..."
@@ -224,10 +219,7 @@ export default function Plans() {
                   sx={{ mr: 1 }}
                   disabled={plan.status !== "DRAFT"}
                   onClick={() =>
-                    publishMutation.mutate({
-                      planCode: plan.planCode,
-                      version: plan.version,
-                    })
+                    publishMutation.mutate({ planCode: plan.planCode, version: plan.version })
                   }
                 >
                   Publish
@@ -238,8 +230,7 @@ export default function Plans() {
         </TableBody>
       </Table>
 
-      {/* Pagination */}
-      <TablePagination
+            <TablePagination
         component="div"
         count={filteredPlans.length}
         page={page}
@@ -252,7 +243,8 @@ export default function Plans() {
         rowsPerPageOptions={[10, 25, 50]}
       />
 
-            <EditPlanDialog
+      {/* Edit Dialog */}
+      <EditPlanDialog
         open={!!selectedPlan}
         onClose={() => setSelectedPlan(null)}
         plan={selectedPlan}
@@ -264,8 +256,7 @@ export default function Plans() {
         <Button
           variant="contained"
           color="success"
-          component={Link}
-          to="/admindashboard/plans/add"
+          onClick={handleCreateDraftPlan}
         >
           Create Draft Plan
         </Button>
@@ -273,4 +264,3 @@ export default function Plans() {
     </TableContainer>
   );
 }
-

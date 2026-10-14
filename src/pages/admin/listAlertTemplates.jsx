@@ -37,7 +37,7 @@ export default function ListNotification() {
           variant="contained"
           color="primary"
           component={Link}
-          to="/admindashboard/create-alert-template"
+          to="/ownerdashboard/owner-create-alert-template"
         >
           Create New Alert Template
         </Button>

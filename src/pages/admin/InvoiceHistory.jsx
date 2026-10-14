@@ -17,7 +17,9 @@ import { useState } from "react";
 
 async function fetchAllInvoices() {
   const token = localStorage.getItem("token");
-  const { data } = await api.get("/api/v1/billing/invoices/history", {
+  const role = localStorage.getItem("role");
+   const email = localStorage.getItem("email");
+  const { data } = await api.get("/api/v1/billing/invoices/history/"+role, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return data; // expected array of invoices

@@ -17,7 +17,8 @@ import api from "../api/axios";
 
 async function fetchLatestInvoices() {
   const token = localStorage.getItem("token");
-  const { data } = await api.get("/api/v1/billing/invoices/history", {
+  const userRole = localStorage.getItem("role");
+  const { data } = await api.get("/api/v1/billing/invoices/history/"+userRole, {
     headers: { Authorization: `Bearer ${token}` },
   });
   // assuming backend returns invoices sorted by date (latest first)

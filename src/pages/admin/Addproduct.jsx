@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../api/axios";
 import {
-  Container, Paper, Typography, TextField, Button, Box
+  Container, Paper, Typography, TextField, Button, Box, FormControl, InputLabel, Select, MenuItem
 } from "@mui/material";
 import { useSnackbar } from "notistack";
 
@@ -13,12 +13,13 @@ async function createProduct(product) {
   return data;
 }
 
-export default function Addproduct() {
+export default function AddProduct() {
   const [form, setForm] = useState({
     productCode: "",
     name: "",
     description: "",
     organizationId: localStorage.getItem("organizationId"),
+    holder: "TENANT", // default value
     active: true,
   });
 
@@ -31,7 +32,15 @@ export default function Addproduct() {
     onSuccess: () => {
       enqueueSnackbar("Product added successfully!", { variant: "success" });
       queryClient.invalidateQueries({ queryKey: ["products"] });
-      navigate("/admindashboard/products"); // redirect back to product list
+
+      const userRole = localStorage.getItem("role");
+      if (userRole === "ROLE_ADMIN") {
+        navigate("/admindashboard/products");
+      } else if (userRole === "ROLE_OWNER") {
+        navigate("/tenantdashboard/owner-products");
+      } else {
+        enqueueSnackbar("Unauthorized role", { variant: "error" });
+      }
     },
     onError: () => {
       enqueueSnackbar("Failed to add product", { variant: "error" });
@@ -80,7 +89,21 @@ export default function Addproduct() {
             rows={3}
             fullWidth
           />
-         
+
+          {/* Holder Combo */}
+          <FormControl fullWidth required>
+            <InputLabel id="holder-label">Holder</InputLabel>
+            <Select
+              labelId="holder-label"
+              name="holder"
+              value={form.holder}
+              onChange={handleChange}
+            >
+              <MenuItem value="OWNER">OWNER</MenuItem>
+              <MenuItem value="TENANT">TENANT</MenuItem>
+            </Select>
+          </FormControl>
+
           <Button type="submit" variant="contained" color="success">
             Save Product
           </Button>

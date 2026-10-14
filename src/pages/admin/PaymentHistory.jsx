@@ -17,7 +17,8 @@ import { useState } from "react";
 async function fetchPayments() {
   const token = localStorage.getItem("token");
   const orgId = localStorage.getItem("organizationId");
-  const { data } = await api.get("/api/v1/billing/payments/history", {
+  const userRole = localStorage.getItem("role");
+  const { data } = await api.get("/api/v1/billing/payments/history/"+userRole, {
     headers: {
       Authorization: `Bearer ${token}`,
       "X-Organization-Id": orgId,
